@@ -134,7 +134,6 @@ module.exports = {
       })
         .then(function (user) {
           const userCurrentRole = user[0].role;
-
           if (userCurrentRole == "user") {
             models.User.updateOne(
               { _id: req.user.id },
@@ -172,38 +171,8 @@ module.exports = {
                   });
                 });
               });
-
-              // models.Event.create({
-              //   description,
-              //   location,
-              //   name,
-              //   date,
-              //   imageURL,
-              //   admin: _id,
-              // })
-              //   .then(
-              //     (createdEvent) => {
-              //       return Promise.all([
-              //         models.User.updateOne(
-              //           { _id },
-              //           { $push: { createdEvents: createdEvent } }
-              //         ),
-              //         models.Event.findOne({ _id: createdEvent._id }),
-              //       ]);
-              //     },
-              //     { new: true }
-              //   )
-              //   .then(([userObj, eventObj]) =>
-              //     res.status(200).json({
-              //       success: true,
-              //       message: "Successfully saved!",
-              //       eventObj,
-              //     })
-              //   );
             });
           } else {
-            console.log(event_type);
-
             models.EventTypeDetails.create({
               event_location: location,
               event_address_line1,
@@ -231,34 +200,6 @@ module.exports = {
                 });
               });
             });
-
-            // models.Event.create({
-            //   description,
-            //   location,
-            //   name,
-            //   date,
-            //   imageURL,
-            //   admin: _id,
-            // })
-            //   .then(
-            //     (createdEvent) => {
-            //       return Promise.all([
-            //         models.User.updateOne(
-            //           { _id },
-            //           { $push: { createdEvents: createdEvent } }
-            //         ),
-            //         models.Event.findOne({ _id: createdEvent._id }),
-            //       ]);
-            //     },
-            //     { new: true }
-            //   )
-            //   .then(([userObj, eventObj]) =>
-            //     res.status(200).json({
-            //       success: true,
-            //       message: "Successfully saved!",
-            //       eventObj,
-            //     })
-            //   );
           }
         })
         .catch(next);
