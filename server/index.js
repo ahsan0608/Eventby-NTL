@@ -8,13 +8,6 @@ require("./services/passport");
 const { startScheduler } = require("./helpers/startScheduler");
 
 const app = require("express")();
-
-// app.use(
-//   cookieSession({
-//     maxAge: 30 * 24 * 60 * 60 * 1000,
-//     keys: [keys.cookieKey],
-//   })
-// );
 app.use(passport.initialize());
 // app.use(passport.session());
 
@@ -23,22 +16,7 @@ const DB_URL =
 // "mongodb+srv://user:eventdb123456@eventdb.wjtee.mongodb.net/users?retryWrites=true&w=majority";
 
 const PORT = 4000;
-
-// mongoose
-//   .connect(DB_URL)
-//   .then(() => {
-//     startScheduler();
-//     require("./config/express")(app);
-
-//     require("./config/routes")(app);
-
-//     app.listen(PORT, console.log(`Listening on port ${PORT}!`));
-//     console.log("Connected to MongoDB");
-//   })
-//   .catch(console.error);
-
 require("./config/express")(app);
-
 require("./config/routes")(app);
 
 const main = async () => {

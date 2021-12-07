@@ -4,7 +4,6 @@ const models = require("../models");
 const utils = require("../utils");
 const keys = require("../config/keys");
 const { sendMailForUserVerification } = require("../utils/mail/mailer");
-// const mailgun = require("mailgun-js");
 const { validate } = require("../models/User");
 
 module.exports = {
