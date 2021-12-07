@@ -1,0 +1,49 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Event Manager Backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "accesscontrol": "^2.2.1",
+    "axios": "^0.24.0",
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "cookie-session": "^1.4.0",
+    "cors": "^2.8.5",
+    "credit-card-type": "^9.1.0",
+    "dotenv": "^8.2.0",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "express-validator": "^6.6.0",
+    "formidable": "^2.0.1",
+    "fs": "0.0.1-security",
+    "joi": "^17.4.2",
+    "joi-password": "^2.0.3",
+    "joi-password-complexity": "^5.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "mailgun-js": "^0.22.0",
+    "mongoose": "^6.0.12",
+    "multer": "^1.4.3",
+    "node-cron": "^3.0.0",
+    "nodemailer": "^6.7.1",
+    "passport": "^0.5.0",
+    "passport-google-oauth20": "^2.0.0",
+    "path": "^0.12.7",
+    "sendgrid": "^5.2.3",
+    "stripe": "^8.191.0",
+    "uniqid": "^5.0.3",
+    "util": "^0.12.4",
+    "uuid": "^8.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
