@@ -1,7 +1,5 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
-const cookieSession = require("cookie-session");
-const dbConnection = require("./config/database");
 const passport = require("passport");
 require("./services/passport");
 
@@ -9,7 +7,6 @@ const { startScheduler } = require("./helpers/startScheduler");
 
 const app = require("express")();
 app.use(passport.initialize());
-// app.use(passport.session());
 
 const DB_URL =
   "mongodb+srv://ahsan:12345@eventbydemo.9r3tq.mongodb.net/eventbydemo?retryWrites=true&w=majority";

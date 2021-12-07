@@ -112,8 +112,8 @@ module.exports = {
                 const token = utils.jwt.createToken({ id: createdUser._id });
                 res.cookie(process.env.COOKIE, token).status(200).json({
                   success: true,
-                  message: "Successfully saved user!",
-                  createdUser,
+                  message:
+                    "Email verification successful! Please login to continue.",
                 });
               })
               .catch(next);
