@@ -28,6 +28,8 @@ router.get(
   controllers.event.get.participantList
 );
 
+router.get("/my-invitations", auth(), controllers.event.get.myInvitations);
+
 router.put("/like/:id", auth(), controllers.event.put.like);
 
 router.put("/dislike/:id", auth(), controllers.event.put.dislike);

@@ -161,6 +161,32 @@ module.exports = {
           });
         });
     },
+    myInvitations: (req, res, next) => {
+      const userId = req.user.id;
+
+      models.User.findById(userId)
+        .populate({
+          path: "invitedAt",
+          model: "Event",
+        })
+        .then((userObj) => {
+          var invitations = [];
+          userObj.invitedAt.map((invitedEvent) => {
+            let result = {
+              id: invitedEvent._id,
+              event_name: invitedEvent.name,
+              description: invitedEvent.description,
+              event_type: invitedEvent.event_type,
+            };
+            invitations.push(result);
+          });
+          res.status(200).json({
+            success: true,
+            message: "My invitations list",
+            invitations,
+          });
+        });
+    },
   },
 
   post: {
@@ -602,6 +628,18 @@ module.exports = {
                 { $addToSet: { receivedInvitation: eventId } },
                 { new: true }
               ).then(async (userObj) => {
+                const userId = req.user.id;
+                models.User.findById(userId).then((userObj) => {
+                  if (userObj.invitedAt.includes(eventId)) {
+                    models.User.updateOne(
+                      { _id: userId },
+                      { $pull: { invitedAt: eventId } },
+                      { new: true }
+                    ).then(() => {
+                      console.log("User updated");
+                    });
+                  }
+                });
                 return res.status(200).json({
                   success: true,
                   message: "Congrats! Youn have joined the event!",
