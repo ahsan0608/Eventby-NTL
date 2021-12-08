@@ -54,12 +54,15 @@ router.delete("/delete/:id", auth(), privilege(), controllers.event.delete);
 
 //Shafayet
 router.post(
-  "/create-revent",
+  "/create-revent/:id",
+  auth(),
+  privilege(),
   joiMiddleware(schemasREvent, "body"),
   controllers.event.post.createEventOrganizer
 );
 router.get("/get-revents", controllers.event.get.getREventsOrganizer);
 router.get("/get-revent/:id", controllers.event.get.getREventByIdOrganizer);
+router.get("/get-revent-status/:id", controllers.event.get.getREventStatusById);
 router.put(
   "/update-revent/:id",
   controllers.event.put.updateREventByIdOrganizer

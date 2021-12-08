@@ -1,10 +1,11 @@
+const mongoose = require("mongoose");
 const models = require("../models");
 const keys = require("../config/keys");
 const stripe = require("stripe")(keys.SPRIPE_SECRET);
 var creditCardType = require("credit-card-type");
 const { sendEventInvitation } = require("../utils/mail/mailer");
 const { getRecurrentEventDates } = require("../helpers");
-
+const { isGreaterToCurrentDate } = require("../helpers/schedulerJobs");
 const { REvent } = require("../models/REvent");
 
 module.exports = {
@@ -74,6 +75,59 @@ module.exports = {
             message: "Success",
           });
         });
+      } catch (error) {
+        return res.status(500).json({
+          success: false,
+          message: "An error occurred",
+        });
+      }
+    },
+    getREventStatusById: (req, res, next) => {
+      try {
+        const event_id = mongoose.Types.ObjectId(req.params.id);
+
+        models.Event.findOne({ _id: event_id })
+          .populate("recurring_event")
+          .then((result) => {
+            let next_event_date = [];
+            if (result.event_status === "EVENT_CREATED") {
+              return res.status(200).json({
+                data: {
+                  _id: result._id,
+                  event_status: result.event_status,
+                  message: "Event is created but not start yet",
+                },
+                success: true,
+                message: "Success",
+              });
+            } else if (result.event_status === "EVENT_END") {
+              return res.status(200).json({
+                data: {
+                  _id: result._id,
+                  event_status: result.event_status,
+                  message: "Event is finished",
+                },
+                success: true,
+                message: "Success",
+              });
+            } else {
+              let recurring_dates = result.recurring_event.rEventDates;
+              next_event_date = recurring_dates.filter(
+                (element) => isGreaterToCurrentDate(element.startDate) !== true
+              );
+
+              return res.status(200).json({
+                data: {
+                  _id: result._id,
+                  event_status: result.event_status,
+                  next_event_date: next_event_date[0],
+                  message: "Event is running",
+                },
+                success: true,
+                message: "Success",
+              });
+            }
+          });
       } catch (error) {
         return res.status(500).json({
           success: false,
@@ -567,19 +621,47 @@ module.exports = {
 
     createEventOrganizer: async (req, res, next) => {
       try {
+        const event_id = req.params.id;
+
+        const eventObj = await models.Event.findOne({
+          _id: event_id,
+        });
+
+        if (eventObj.recurring_event != null) {
+          return res.status(400).json({
+            success: false,
+            message: "You have already save recurrent dates for this event!",
+          });
+        }
+
         getRecurrentEventDates(req.body).then((rEventData) => {
           // console.log(rEventData);
 
-          REvent.create({ rEventDates: rEventData }).then((reevent) => {
-            // console.log(reevent);
-            if (reevent) {
-              console.log("Recurrent Event Created Successfully");
-              res.status(201).json({
-                data: { _id: reevent._id },
-                success: true,
-                message: "Recurrent Event Created Successfully",
-              });
-            }
+          const rEventDataWithEventId = {
+            rEventDates: rEventData,
+            eventId: event_id,
+          };
+          REvent.create(rEventDataWithEventId).then((createdReevent) => {
+            // console.log(createdReevent);
+
+            models.Event.updateOne(
+              { _id: event_id },
+              {
+                $set: {
+                  recurring_event: createdReevent,
+                },
+              },
+              { new: true }
+            ).then(function (updatedReevent) {
+              if (updatedReevent) {
+                // console.log("Recurrent Event Created Successfully");
+                res.status(200).json({
+                  success: true,
+                  message: "Successfully saved reevent!",
+                  updatedReevent,
+                });
+              }
+            });
           });
         });
       } catch (error) {

@@ -10,7 +10,7 @@ app.use(passport.initialize());
 
 const DB_URL =
   "mongodb+srv://ahsan:12345@eventbydemo.9r3tq.mongodb.net/eventbydemo?retryWrites=true&w=majority";
-// "mongodb+srv://user:eventdb123456@eventdb.wjtee.mongodb.net/users?retryWrites=true&w=majority";
+// "mongodb+srv://user:eventdb123456@eventdb.wjtee.mongodb.net/eventByTest?retryWrites=true&w=majority";
 
 const PORT = 4000;
 require("./config/express")(app);

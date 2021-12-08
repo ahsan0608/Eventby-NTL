@@ -6,6 +6,14 @@ const REvent = mongoose.model(
   new mongoose.Schema(
     {
       rEventDates: [],
+      eventId: {
+        type: String,
+        required: true,
+      },
+      event: {
+        type: mongoose.Types.ObjectId,
+        ref: "Event",
+      },
     },
     { timestamps: true }
   )

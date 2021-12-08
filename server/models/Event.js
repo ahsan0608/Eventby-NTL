@@ -32,6 +32,15 @@ const EventSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "Ticket",
     },
+    recurring_event: {
+      type: mongoose.Types.ObjectId,
+      ref: "REvent",
+    },
+    event_status: {
+      type: String,
+      default: "EVENT_CREATED",
+      enum: ["EVENT_CREATED", "EVENT_RUNNING", "EVENT_END"],
+    },
     admin: [
       {
         type: mongoose.Types.ObjectId,
