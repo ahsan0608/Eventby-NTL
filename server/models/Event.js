@@ -39,7 +39,7 @@ const EventSchema = new mongoose.Schema(
     event_status: {
       type: String,
       default: "EVENT_CREATED",
-      enum: ["EVENT_CREATED", "EVENT_RUNNING", "EVENT_END"],
+      enum: ["EVENT_CREATED", "EVENT_RUNNING", "EVENT_PAUSE", "EVENT_END"],
     },
     admin: [
       {

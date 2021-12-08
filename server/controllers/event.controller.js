@@ -89,12 +89,14 @@ module.exports = {
         models.Event.findOne({ _id: event_id })
           .populate("recurring_event")
           .then((result) => {
-            let next_event_date = [];
+            let next_event_date_and_time = [];
             if (result.event_status === "EVENT_CREATED") {
               return res.status(200).json({
                 data: {
                   _id: result._id,
                   event_status: result.event_status,
+                  next_event_date_and_time:
+                    result.recurring_event.rEventDates[0],
                   message: "Event is created but not start yet",
                 },
                 success: true,
@@ -112,15 +114,18 @@ module.exports = {
               });
             } else {
               let recurring_dates = result.recurring_event.rEventDates;
-              next_event_date = recurring_dates.filter(
-                (element) => isGreaterToCurrentDate(element.startDate) !== true
+              console.log(recurring_dates);
+              next_event_date_and_time = recurring_dates.filter(
+                (element) => isGreaterToCurrentDate(element.startDate) === true
               );
+
+              console.log(next_event_date_and_time);
 
               return res.status(200).json({
                 data: {
                   _id: result._id,
                   event_status: result.event_status,
-                  next_event_date: next_event_date[0],
+                  next_event_date_and_time: next_event_date_and_time[0],
                   message: "Event is running",
                 },
                 success: true,
