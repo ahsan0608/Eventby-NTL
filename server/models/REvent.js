@@ -70,14 +70,14 @@ const DATES = [
 ];
 
 const schemasREvent = Joi.object({
-  startDate: Joi.date(),
-  endDate: Joi.date(),
+  startDate: Joi.date().required().greater(Date.now()),
+  endDate: Joi.date().required().min(Joi.ref("startDate")),
   numOfRecurrence: Joi.string().min(1).max(100).required(),
   recurrenceType: Joi.string().valid(...RECURRENCE_TYPE),
   timeInputs: Joi.array().items(
     Joi.object().keys({
-      startTime: Joi.date(),
-      endTime: Joi.date(),
+      startTime: Joi.date().required().greater(Date.now()),
+      endTime: Joi.date().required().min(Joi.ref("startTime")),
     })
   ),
   selectedDays: Joi.array().items(
