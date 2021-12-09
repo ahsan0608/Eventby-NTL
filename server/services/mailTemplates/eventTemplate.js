@@ -1,3 +1,12 @@
+/*
+ * Filename: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server/services/mailTemplates/eventTemplate.js
+ * Path: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server
+ * Created Date: December 11th 2021, 2:49:48 pm
+ * Author: ahsan
+ *
+ * Copyright (c) 2021 @BRL
+ */
+
 const keys = require("../../config/keys");
 
 module.exports = (eventbody, eventId) => {

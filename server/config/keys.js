@@ -1,3 +1,12 @@
+/*
+ * Filename: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server/config/keys.js
+ * Path: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server
+ * Created Date: November 18th 2021, 2:49:48 pm
+ * Author: ahsan
+ *
+ * Copyright (c) 2021 @BRL
+ */
+
 module.exports = {
   redirectDomain: "http://localhost:4000",
   MAILGUN_API_KEY: "ba8c076203c83915b34845119b1f6ff5-7dcc6512-2d71b706",
