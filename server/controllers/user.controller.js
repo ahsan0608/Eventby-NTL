@@ -4,7 +4,8 @@ const models = require("../models");
 const utils = require("../utils");
 const keys = require("../config/keys");
 const { sendMailForUserVerification } = require("../utils/mail/mailer");
-const { validate } = require("../models/User");
+const { validateRegistration } = require("../models/User");
+const { validateLogin } = require("../models/User");
 
 module.exports = {
   get: {
@@ -37,7 +38,7 @@ module.exports = {
     register: (req, res, next) => {
       const { googleId, firstName, lastName, email, password, role } = req.body;
 
-      const { error } = validate(req.body);
+      const { error } = validateRegistration(req.body);
 
       if (error) {
         return res.status(400).json({
@@ -126,38 +127,47 @@ module.exports = {
     login: (req, res, next) => {
       const { email, password } = req.body;
 
-      models.User.findOne({ email })
-        .then((user) =>
-          !!user
-            ? Promise.all([user, user.matchPassword(password)])
-            : [null, false]
-        )
-        .then(([user, match]) => {
-          if (!match) {
-            res.status(401).json({
-              success: false,
-              message: "Invalid email or password",
-            });
-            return;
-          }
+      const { error } = validateLogin(req.body);
 
-          let result = {
-            id: user._id,
-            googleId: user.googleId,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            createdEvents: user.createdEvents,
-            likedEvents: user.likedEvents,
-          };
-          const token = utils.jwt.createToken({ id: user._id });
-          res.cookie(process.env.COOKIE, token).status(200).json({
-            success: true,
-            message: "Successfully logged in!",
-            result,
-          });
-        })
-        .catch(next);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      } else {
+        models.User.findOne({ email })
+          .then((user) =>
+            !!user
+              ? Promise.all([user, user.matchPassword(password)])
+              : [null, false]
+          )
+          .then(([user, match]) => {
+            if (!match) {
+              res.status(401).json({
+                success: false,
+                message: "Invalid email or password",
+              });
+              return;
+            }
+
+            let result = {
+              id: user._id,
+              googleId: user.googleId,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              createdEvents: user.createdEvents,
+              likedEvents: user.likedEvents,
+            };
+            const token = utils.jwt.createToken({ id: user._id });
+            res.cookie(process.env.COOKIE, token).status(200).json({
+              success: true,
+              message: "Successfully logged in!",
+              result,
+            });
+          })
+          .catch(next);
+      }
     },
 
     logout: (req, res, next) => {
