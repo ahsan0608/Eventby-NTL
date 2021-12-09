@@ -39,15 +39,24 @@ const isGreaterToCurrentDate = (d) => {
   return false;
 };
 
-const isGreaterToEventStartDate = (d) => {
-  let date1 = new Date(d.getTime());
+const isGreaterThanOrEqualToEventStartDate = (eventStartDate) => {
+  let date1 = new Date();
   date1.setHours(0, 0, 0, 0);
 
-  let date2 = new Date();
+  let date2 = new Date(eventStartDate.getTime());
   date2.setHours(0, 0, 0, 0);
 
-  if (date1.getTime() > date2.getTime()) {
+  if (date1.getTime() >= date2.getTime()) {
     return true;
+  }
+  return false;
+};
+
+const isLessThanToEventEndTime = (eventEndTime) => {
+  if (new Date().getHours() <= new Date(eventEndTime).getUTCHours()) {
+    if (new Date().getMinutes() < new Date(eventEndTime).getMinutes()) {
+      return true;
+    }
   }
   return false;
 };
@@ -57,8 +66,6 @@ const updateEventStatusByEventId = (
   currentStatus,
   updatedStatus
 ) => {
-  console.log(currentEventId, " - ", currentStatus, " - ", updatedStatus);
-
   models.Event.updateOne(
     {
       $and: [{ id: currentEventId }, { event_status: currentStatus }],
@@ -69,85 +76,49 @@ const updateEventStatusByEventId = (
       },
     }
   ).then((eventObj) => {
-    console.log(eventObj);
+    console.log(updatedStatus);
   });
 };
 
 const checkEventIsRunning = (dateObj, timeObj, currentEventId) => {
-  //check start date
-  if (isEqualToCurrentDate(dateObj.startDate)) {
-    // console.log("Date Matched");
-    if (isEqualToCurrentTime(timeObj.startTime)) {
-      console.log(
-        "Current Date & Time Matched",
-        "  =  " + dateObj.startDate,
-        timeObj.startTime,
-        currentEventId
-      );
-
-      //    DO SOMETHING...
-      updateEventStatusByEventId(
-        currentEventId,
-        "EVENT_CREATED",
-        "EVENT_RUNNING"
-      );
-      return true;
-    }
+  if (
+    isEqualToCurrentDate(dateObj.startDate) &&
+    isEqualToCurrentTime(timeObj.startTime)
+  ) {
+    updateEventStatusByEventId(
+      currentEventId,
+      "EVENT_CREATED",
+      "EVENT_RUNNING"
+    );
+    return true;
   }
 };
 
 const checkEventIsEnd = (dateObj, timeObj, currentEventId) => {
-  // check end date
-  if (isEqualToCurrentDate(dateObj.endDate)) {
-    // console.log("Date Matched");
-    if (isEqualToCurrentTime(timeObj.endTime)) {
-      console.log(
-        "Current Date & Time Matched",
-        "  =  " + dateObj.startDate,
-        timeObj.startTime,
-        currentEventId
-      );
-
-      //    DO SOMETHING...
-      updateEventStatusByEventId(currentEventId, "EVENT_RUNNING", "EVENT_END");
-      return true;
-    }
+  if (
+    isEqualToCurrentDate(dateObj.endDate) &&
+    isEqualToCurrentTime(timeObj.endTime)
+  ) {
+    updateEventStatusByEventId(currentEventId, "EVENT_RUNNING", "EVENT_END");
+    return true;
   }
 };
 
 const checkEventIsPause = (
   eventStartDate,
-  eventStartTime,
+  eventEndTime,
   dateObj,
   timeObj,
   currentEventId
 ) => {
-  //   EVENT_PAUSE
-  // when event is
-  // GREATER THAN [startDate and startTime] AND
-  // BETWEEN NOT EQUAL [startDate and startTime] AND LESS THAN next event [startDate and startTime]
-
-  // console.log("Event Start Date: "+dateObj[].startDate)
-  //check start date
-
-  if (isEqualToCurrentDate(dateObj.startDate)) {
-    // console.log("Date Matched");
-    if (isEqualToCurrentTime(timeObj.startTime)) {
-      console.log(
-        "Current Date & Time Matched",
-        "  =  " + dateObj.startDate,
-        timeObj.startTime,
-        currentEventId
-      );
-
-      //    DO SOMETHING...
-      updateEventStatusByEventId(
-        currentEventId,
-        "EVENT_CREATED",
-        "EVENT_RUNNING"
-      );
-      return true;
-    }
+  if (
+    isGreaterThanOrEqualToEventStartDate(eventStartDate) &&
+    !isEqualToCurrentDate(dateObj.startDate) &&
+    isLessThanToEventEndTime(eventEndTime) &&
+    !isEqualToCurrentTime(timeObj.startTime)
+  ) {
+    updateEventStatusByEventId(currentEventId, "EVENT_RUNNING", "EVENT_PAUSE");
+    return true;
   }
 };
 
@@ -155,25 +126,22 @@ const updateREventStatus = async () => {
   REvent.find()
     .then((result) => {
       if (result[0]) {
-        // console.log(result[0]);
         const currentEventId = mongoose.Types.ObjectId(result[0].eventId);
         const rDates = result[0].rEventDates;
         const eventStartDate = rDates[0].startDate;
-        const eventStartTime = rDates[0].REventTimes.startTime;
-        // console.log("RESULT: ");
-        // console.log(currentEventId);
-        // console.log(rDates);
+        const eventEndTime = rDates[0].REventTimes[0].endTime;
+
         rDates.map((dateObj) => {
           dateObj.REventTimes.map((timeObj) => {
             checkEventIsRunning(dateObj, timeObj, currentEventId);
 
-            // checkEventIsPause(
-            //   eventStartDate,
-            //   eventStartTime,
-            //   dateObj,
-            //   timeObj,
-            //   currentEventId
-            // );
+            checkEventIsPause(
+              eventStartDate,
+              eventEndTime,
+              dateObj,
+              timeObj,
+              currentEventId
+            );
 
             checkEventIsEnd(dateObj, timeObj, currentEventId);
           });
