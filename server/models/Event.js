@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 
 const EventSchema = new mongoose.Schema(
   {
@@ -16,7 +17,11 @@ const EventSchema = new mongoose.Schema(
       contentType: String,
       description: String,
     },
-    date: {
+    start_date: {
+      type: Date,
+      required: true,
+    },
+    end_date: {
       type: Date,
       required: true,
     },
@@ -77,4 +82,23 @@ const EventSchema = new mongoose.Schema(
   }
 );
 
+function validateEventDate(start_date, end_date) {
+  var dateValidationBool = false;
+  const isValidStartDate = moment(start_date).isValid();
+  const isValidEndDate = moment(end_date).isValid();
+  if (isValidStartDate && isValidEndDate) {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var eventStartDate = new Date(start_date);
+    var eventEndDate = new Date(end_date);
+
+    if (today < eventStartDate && today < eventEndDate) {
+      dateValidationBool = true;
+    }
+  }
+
+  return dateValidationBool;
+}
+
 module.exports = mongoose.model("Event", EventSchema);
+module.exports.validateDate = validateEventDate;
