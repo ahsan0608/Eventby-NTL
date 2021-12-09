@@ -1,3 +1,12 @@
+/*
+ * Filename: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server/controllers/user.controller.js
+ * Path: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server
+ * Created Date: November 19th 2021, 9:15:11 am
+ * Author: ahsan
+ *
+ * Copyright (c) 2021 @BRL
+ */
+
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const models = require("../models");

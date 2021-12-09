@@ -1,3 +1,12 @@
+/*
+ * Filename: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server/utils/ticketChecker.js
+ * Path: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server
+ * Created Date: December 5th 2021, 2:49:48 pm
+ * Author: ahsan
+ *
+ * Copyright (c) 2021 @BRL
+ */
+
 const models = require("../models");
 
 module.exports = () => {

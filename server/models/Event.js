@@ -1,5 +1,15 @@
+/*
+ * Filename: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server/models/Event.js
+ * Path: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server
+ * Created Date: November 19th 2021, 3:47:51 pm
+ * Author: ahsan
+ *
+ * Copyright (c) 2021 @BRL
+ */
+
 const mongoose = require("mongoose");
 const moment = require("moment");
+const Joi = require("joi");
 
 const EventSchema = new mongoose.Schema(
   {
@@ -82,6 +92,24 @@ const EventSchema = new mongoose.Schema(
   }
 );
 
+function validateEvent(event) {
+  const requiredEventObj = {
+    description: event.description,
+    name: event.name,
+    event_type: event.event_type,
+    start_date: event.start_date,
+    end_date: event.end_date,
+  };
+  const schema = Joi.object({
+    description: Joi.string().required(),
+    name: Joi.string().required(),
+    event_type: Joi.string().required(),
+    start_date: Joi.string().required(),
+    end_date: Joi.string().required(),
+  });
+  return schema.validate(requiredEventObj);
+}
+
 function validateEventDate(start_date, end_date) {
   var dateValidationBool = false;
   const isValidStartDate = moment(start_date).isValid();
@@ -96,9 +124,9 @@ function validateEventDate(start_date, end_date) {
       dateValidationBool = true;
     }
   }
-
   return dateValidationBool;
 }
 
 module.exports = mongoose.model("Event", EventSchema);
+module.exports.validateEvent = validateEvent;
 module.exports.validateDate = validateEventDate;

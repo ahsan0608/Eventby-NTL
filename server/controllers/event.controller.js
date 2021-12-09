@@ -1,3 +1,12 @@
+/*
+ * Filename: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server/controllers/event.controller.js
+ * Path: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server
+ * Created Date: November 18th 2021, 3:47:51 pm
+ * Author: ahsan
+ *
+ * Copyright (c) @BRL
+ */
+
 const mongoose = require("mongoose");
 const models = require("../models");
 const keys = require("../config/keys");
@@ -9,6 +18,7 @@ const { isGreaterToCurrentDate } = require("../helpers/schedulerJobs");
 const { REvent } = require("../models/REvent");
 const notifier = require("node-notifier");
 const { validateDate } = require("../models/Event");
+const { validateEvent } = require("../models/Event");
 
 module.exports = {
   get: {
@@ -217,12 +227,21 @@ module.exports = {
       } = req.body;
       const { _id } = req.user;
 
-      const dateValidation = validateDate(start_date, end_date);
-      if (!dateValidation) {
+      const { error } = validateEvent(req.body);
+
+      if (error) {
         return res.status(400).json({
           success: false,
-          message: "Invalid date. Please check the event date!",
+          message: error.details[0].message,
         });
+      } else {
+        const dateValidation = validateDate(start_date, end_date);
+        if (!dateValidation) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid date. Please check the event date!",
+          });
+        }
       }
 
       await models.User.find({

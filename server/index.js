@@ -1,3 +1,12 @@
+/*
+ * Filename: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server/index.js
+ * Path: /home/ahsan/Documents/Full Stack Node and React/Eventby/SMOOTH/dec 05th 2021/Eventby/server
+ * Created Date: November 5th 2021, 11:07:57 am
+ * Author: ahsan
+ *
+ * Copyright (c) 2021 @BRL
+ */
+
 require("dotenv").config();
 const mongoose = require("mongoose");
 const passport = require("passport");
