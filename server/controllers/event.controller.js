@@ -7,6 +7,8 @@ const { sendEventInvitation } = require("../utils/mail/mailer");
 const { getRecurrentEventDates } = require("../helpers");
 const { isGreaterToCurrentDate } = require("../helpers/schedulerJobs");
 const { REvent } = require("../models/REvent");
+const notifier = require("node-notifier");
+const { validateDate } = require("../models/Event");
 
 module.exports = {
   get: {
@@ -200,7 +202,8 @@ module.exports = {
         description,
         location,
         name,
-        date,
+        start_date,
+        end_date,
         event_address_line1,
         event_address_line2,
         event_country,
@@ -213,6 +216,14 @@ module.exports = {
         event_platform_link,
       } = req.body;
       const { _id } = req.user;
+
+      const dateValidation = validateDate(start_date, end_date);
+      if (!dateValidation) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid date. Please check the event date!",
+        });
+      }
 
       await models.User.find({
         _id: req.user.id,
@@ -245,10 +256,16 @@ module.exports = {
                   name,
                   event_type_details: eventTypeDetailsObj,
                   event_type,
-                  date,
+                  start_date,
+                  end_date,
                   imageURL,
                   admin: _id,
                 }).then(function (eventObj) {
+                  notifier.notify({
+                    title: "Success!",
+                    message: "Successfully created event!",
+                    sound: true,
+                  });
                   res.status(200).json({
                     success: true,
                     message: "Successfully saved!",
@@ -274,10 +291,16 @@ module.exports = {
                 name,
                 event_type_details: eventTypeDetailsObj,
                 event_type,
-                date,
+                start_date,
+                end_date,
                 imageURL,
                 admin: _id,
               }).then(function (eventObj) {
+                notifier.notify({
+                  title: "Success!",
+                  message: "Successfully created event!",
+                  sound: true,
+                });
                 res.status(200).json({
                   success: true,
                   message: "Successfully saved!",
