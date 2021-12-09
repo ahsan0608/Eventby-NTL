@@ -64,7 +64,7 @@ UserSchema.pre("save", function (next) {
   next();
 });
 
-function validateUser(user) {
+function validateUserRegistration(user) {
   const schema = Joi.object({
     firstName: Joi.string()
       .alphanum()
@@ -86,5 +86,15 @@ function validateUser(user) {
   return schema.validate(user);
 }
 
+function validateUserLogin(user) {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  });
+
+  return schema.validate(user);
+}
+
 module.exports = mongoose.model("User", UserSchema);
-module.exports.validate = validateUser;
+module.exports.validateRegistration = validateUserRegistration;
+module.exports.validateLogin = validateUserLogin;
