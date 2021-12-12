@@ -19,6 +19,7 @@ const { REvent } = require("../models/REvent");
 const notifier = require("node-notifier");
 const { validateDate } = require("../models/Event");
 const { validateEvent } = require("../models/Event");
+const { validateSpeaker } = require("../models/Speaker");
 
 module.exports = {
   get: {
@@ -52,6 +53,10 @@ module.exports = {
         .populate({
           path: "event_type_details",
           model: "EventTypeDetails",
+        })
+        .populate({
+          path: "speakers",
+          model: "Speaker",
         })
         .exec((err, data) => res.send(data));
     },
@@ -757,31 +762,61 @@ module.exports = {
       }
     },
     addSpeaker: async (req, res, next) => {
-      console.log("Hereeeee....");
       const eventId = req.params.id;
       const { firstName, lastName, email } = req.body;
 
-      await models.Speaker.create({
-        firstName,
-        lastName,
-        email,
-      })
-        .then((speakerObj) => {
-          models.Event.updateOne(
-            { _id: eventId },
-            {
-              $set: {
-                speakers: speakerObj,
+      const { error } = validateSpeaker(req.body);
+
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      }
+
+      await models.Speaker.findOne({ email })
+        .then(async (speakerObj) => {
+          if (speakerObj == null) {
+            await models.Speaker.create({
+              firstName,
+              lastName,
+              email,
+            })
+              .then((newSpeakerObj) => {
+                models.Event.updateOne(
+                  { _id: eventId },
+                  {
+                    $addToSet: {
+                      speakers: speakerObj,
+                    },
+                  },
+                  { new: true }
+                ).then((updatedEvent) => {
+                  res.status(200).json({
+                    success: true,
+                    message: "Successfully saved speaker!",
+                    updatedEvent,
+                  });
+                });
+              })
+              .catch(next);
+          } else {
+            models.Event.updateOne(
+              { _id: eventId },
+              {
+                $addToSet: {
+                  speakers: speakerObj,
+                },
               },
-            },
-            { new: true }
-          ).then(function (updatedEvent) {
-            res.status(200).json({
-              success: true,
-              message: "Successfully saved speaker!",
-              updatedEvent,
+              { new: true }
+            ).then((updatedEvent) => {
+              res.status(200).json({
+                success: true,
+                message: "Successfully saved speaker!",
+                updatedEvent,
+              });
             });
-          });
+          }
         })
         .catch(next);
     },
