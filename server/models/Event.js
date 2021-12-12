@@ -62,6 +62,12 @@ const EventSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    speakers: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Speaker",
+      },
+    ],
     likes: [
       {
         type: mongoose.Types.ObjectId,

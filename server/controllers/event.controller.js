@@ -756,6 +756,35 @@ module.exports = {
         });
       }
     },
+    addSpeaker: async (req, res, next) => {
+      console.log("Hereeeee....");
+      const eventId = req.params.id;
+      const { firstName, lastName, email } = req.body;
+
+      await models.Speaker.create({
+        firstName,
+        lastName,
+        email,
+      })
+        .then((speakerObj) => {
+          models.Event.updateOne(
+            { _id: eventId },
+            {
+              $set: {
+                speakers: speakerObj,
+              },
+            },
+            { new: true }
+          ).then(function (updatedEvent) {
+            res.status(200).json({
+              success: true,
+              message: "Successfully saved speaker!",
+              updatedEvent,
+            });
+          });
+        })
+        .catch(next);
+    },
   },
 
   put: {
