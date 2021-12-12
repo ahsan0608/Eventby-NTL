@@ -17,6 +17,7 @@ const CustomTicket = require("./CustomTicket");
 const Payment = require("./Payment");
 const REvent = require("./REvent");
 const EventTypeDetails = require("./EventTypeDetails");
+const Speaker = require("./Speaker");
 
 module.exports = {
   User,
@@ -29,4 +30,5 @@ module.exports = {
   Payment,
   REvent,
   EventTypeDetails,
+  Speaker,
 };

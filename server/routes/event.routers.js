@@ -53,6 +53,13 @@ router.put(
 );
 
 router.post(
+  "/addSpeaker/:id",
+  auth(),
+  privilege(),
+  controllers.event.post.addSpeaker
+);
+
+router.post(
   "/invite/:id",
   auth(),
   privilege(),
