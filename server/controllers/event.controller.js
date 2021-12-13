@@ -20,6 +20,7 @@ const notifier = require("node-notifier");
 const { validateDate } = require("../models/Event");
 const { validateEvent } = require("../models/Event");
 const { validateSpeaker } = require("../models/Speaker");
+const { validateSponsor } = require("../models/Sponsor");
 
 module.exports = {
   get: {
@@ -57,6 +58,10 @@ module.exports = {
         .populate({
           path: "speakers",
           model: "Speaker",
+        })
+        .populate({
+          path: "sponsors",
+          model: "Sponsor",
         })
         .exec((err, data) => res.send(data));
     },
@@ -319,16 +324,22 @@ module.exports = {
                 end_date,
                 imageURL,
                 admin: _id,
-              }).then(function (eventObj) {
-                notifier.notify({
-                  title: "Success!",
-                  message: "Successfully created event!",
-                  sound: true,
-                });
-                res.status(200).json({
-                  success: true,
-                  message: "Successfully saved!",
-                  eventObj,
+              }).then(async (eventObj) => {
+                await models.User.updateOne(
+                  { _id: req.user.id },
+                  { $push: { createdEvents: eventObj } },
+                  { new: true }
+                ).then((userObj) => {
+                  notifier.notify({
+                    title: "Success!",
+                    message: "Successfully created event!",
+                    sound: true,
+                  });
+                  res.status(200).json({
+                    success: true,
+                    message: "Successfully saved!",
+                    userObj,
+                  });
                 });
               });
             });
@@ -787,7 +798,7 @@ module.exports = {
                   { _id: eventId },
                   {
                     $addToSet: {
-                      speakers: speakerObj,
+                      speakers: newSpeakerObj,
                     },
                   },
                   { new: true }
@@ -820,28 +831,125 @@ module.exports = {
         })
         .catch(next);
     },
+    addSponsor: async (req, res, next) => {
+      const eventId = req.params.id;
+      const { name, website } = req.body;
+
+      const { error } = validateSponsor(req.body);
+
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      }
+
+      await models.Sponsor.findOne({ name })
+        .then(async (sponsorObj) => {
+          if (sponsorObj == null) {
+            await models.Sponsor.create({
+              name,
+              website,
+            })
+              .then((newSponsorObj) => {
+                models.Event.updateOne(
+                  { _id: eventId },
+                  {
+                    $addToSet: {
+                      sponsors: newSponsorObj,
+                    },
+                  },
+                  { new: true }
+                ).then((updatedEvent) => {
+                  res.status(200).json({
+                    success: true,
+                    message: "Successfully saved speaker!",
+                    updatedEvent,
+                  });
+                });
+              })
+              .catch(next);
+          } else {
+            models.Event.updateOne(
+              { _id: eventId },
+              {
+                $addToSet: {
+                  sponsors: sponsorObj,
+                },
+              },
+              { new: true }
+            ).then((updatedEvent) => {
+              res.status(200).json({
+                success: true,
+                message: "Successfully saved speaker!",
+                updatedEvent,
+              });
+            });
+          }
+        })
+        .catch(next);
+    },
   },
 
   put: {
-    edit: async (req, res, next) => {
-      const id = req.params.id;
-      const { name, description, imageURL, date, location } = req.body;
+    editEvent: async (req, res, next) => {
+      const event_id = req.params.id;
+      const {
+        description,
+        location,
+        name,
+        start_date,
+        end_date,
+        event_address_line1,
+        event_address_line2,
+        event_country,
+        event_city_town,
+        event_state,
+        event_postal_code,
+        imageURL,
+        event_type,
+        event_platform,
+        event_platform_link,
+      } = req.body;
+      const dateValidation = validateDate(start_date, end_date);
+      if (!dateValidation) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid date. Please check the event date!",
+        });
+      }
       await models.Event.findByIdAndUpdate(
-        id,
+        { _id: event_id },
         {
           name,
           description,
           imageURL,
-          date,
-          location,
+          start_date,
+          end_date,
         },
         { new: true }
       )
-        .then((updatedEvent) => {
-          res.status(200).json({
-            success: true,
-            message: "Successfully updates!",
-            updatedEvent,
+        .then(async (updatedEvent) => {
+          await models.EventTypeDetails.findByIdAndUpdate(
+            { _id: updatedEvent.event_type_details._id },
+            {
+              event_location: location,
+              event_address_line1,
+              event_address_line2,
+              event_country,
+              event_city_town,
+              event_state,
+              event_postal_code,
+              event_platform,
+              event_platform_link,
+            },
+            { new: true }
+          ).then((eventTypeDetailsObj) => {
+            res.status(200).json({
+              success: true,
+              message: "Successfully updates!",
+              updatedEvent,
+            });
           });
         })
         .catch(next);
@@ -889,10 +997,22 @@ module.exports = {
     addCoOrganizer: async (req, res, next) => {
       const eventId = req.params.id;
       const { coOrganizerId } = req.body;
-      await models.User.findById(coOrganizerId).then((coOrganizer) => {
+
+      const eventObj = await models.Event.findOne({
+        _id: eventId,
+      });
+
+      if (eventObj.admin.includes(coOrganizerId)) {
+        return res.status(400).json({
+          success: false,
+          message: "User has already assigned as co-organizer!",
+        });
+      }
+
+      await models.User.findById(coOrganizerId).then((coOrganizerObj) => {
         models.Event.updateOne(
           { _id: eventId },
-          { $push: { admin: coOrganizer } },
+          { $push: { admin: coOrganizerObj } },
           { new: true }
         )
           .then((updatedEventCoOrg) =>
@@ -933,25 +1053,47 @@ module.exports = {
     },
   },
 
-  delete: (req, res, next) => {
-    const id = req.params.id;
-    const { _id } = req.user;
+  delete: {
+    deleteEvent: (req, res, next) => {
+      const id = req.params.id;
+      const { _id } = req.user;
 
-    models.Event.deleteOne({ _id: id })
-      .then((deletedEvent) => {
-        return Promise.all([
-          models.User.updateOne({ _id }, { $pull: { createdEvents: id } }),
-          models.Event.findOne({ _id: deletedEvent._id }),
-        ]);
-      })
-      .then(([obj, deletedEvent]) =>
-        res.status(200).json({
-          success: true,
-          message: "Successfully deleted!",
-          deletedEvent,
+      models.Event.deleteOne({ _id: id })
+        .then((deletedEvent) => {
+          return Promise.all([
+            models.User.updateOne({ _id }, { $pull: { createdEvents: id } }),
+            models.Event.findOne({ _id: deletedEvent._id }),
+          ]);
         })
-      )
-      .catch(next);
+        .then(([obj, deletedEvent]) =>
+          res.status(200).json({
+            success: true,
+            message: "Successfully deleted!",
+            deletedEvent,
+          })
+        )
+        .catch(next);
+    },
+    deleteSponsor: (req, res, next) => {
+      const eventId = req.params.id;
+      const { sponsor_id } = req.body;
+
+      models.Sponsor.deleteOne({ _id: sponsor_id })
+        .then(async (deletedSponsor) => {
+          console.log(deletedSponsor);
+          await models.Event.updateOne(
+            { _id: eventId },
+            { $pull: { sponsors: sponsor_id } }
+          ).then((deletedSponsor) =>
+            res.status(200).json({
+              success: true,
+              message: "Successfully deleted!",
+              deletedSponsor,
+            })
+          );
+        })
+        .catch(next);
+    },
   },
 
   deleteREventByIdOrganizer: (req, res, next) => {

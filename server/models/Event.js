@@ -68,6 +68,12 @@ const EventSchema = new mongoose.Schema(
         ref: "Speaker",
       },
     ],
+    sponsors: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Sponsor",
+      },
+    ],
     likes: [
       {
         type: mongoose.Types.ObjectId,
