@@ -43,7 +43,7 @@ router.put("/like/:id", auth(), controllers.event.put.like);
 
 router.put("/dislike/:id", auth(), controllers.event.put.dislike);
 
-router.put("/edit/:id", auth(), privilege(), controllers.event.put.edit);
+router.put("/edit/:id", auth(), privilege(), controllers.event.put.editEvent);
 
 router.put(
   "/addCoOrganizer/:id",
@@ -60,6 +60,13 @@ router.post(
 );
 
 router.post(
+  "/addSponsor/:id",
+  auth(),
+  privilege(),
+  controllers.event.post.addSponsor
+);
+
+router.post(
   "/invite/:id",
   auth(),
   privilege(),
@@ -68,7 +75,19 @@ router.post(
 
 router.get("/events/:eventId/:choice", controllers.event.get.mailResponse);
 
-router.delete("/delete/:id", auth(), privilege(), controllers.event.delete);
+router.delete(
+  "/delete/event:id",
+  auth(),
+  privilege(),
+  controllers.event.delete.deleteEvent
+);
+
+router.delete(
+  "/delete/sponsor/:id",
+  auth(),
+  privilege(),
+  controllers.event.delete.deleteSponsor
+);
 
 //Shafayet
 router.post(
