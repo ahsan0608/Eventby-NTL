@@ -1,3 +1,4 @@
+const models = require("../models");
 const getDateDifference = (startDate, endDate) => {
   var date1 = new Date(startDate);
   var date2 = new Date(endDate);
@@ -28,16 +29,6 @@ const getAllDatesByInterval = (
 };
 
 const getSelectedDays = (selectedDays) => {
-  /* 
-        day = new Date().getDay()
-        sun = 0
-        mon = 1
-        tue = 2
-        wed = 3
-        thu = 4
-        fri = 5
-        sat = 6
-        */
   const days = [];
   selectedDays.map((o) => {
     if (o.isSelected && o.day === "SUN") {
@@ -342,11 +333,16 @@ const getREventData = (dateList, timeInputs, endDate) => {
   }));
 };
 
-const getRecurrentEventDates = async (data) => {
+const getRecurrentEventDates = async (data, event_id) => {
+  const eventObj = await models.Event.findOne({
+    _id: event_id,
+  });
+
+  const startDate = eventObj.start_date;
+  const endDate = eventObj.end_date;
+
   // console.log(JSON.stringify(data));
   let {
-    startDate,
-    endDate,
     numOfRecurrence,
     recurrenceType,
     timeInputs,
@@ -355,20 +351,6 @@ const getRecurrentEventDates = async (data) => {
     selectedMonths,
     selectedDatesForYear,
   } = data;
-
-  /* 
-    startDate= 21/11/21
-    endDate= 31/01/22
-    numOfRecurrence= 2
-    recurrenceType= Week
-
-
-    21/11/21 startDate
-    25/11/21 startDate = startDate + (numOfRecurrence - 1)
-    29/11/21
-  
-  
-  */
 
   const dateDiff = getDateDifference(startDate, endDate);
 
@@ -513,14 +495,6 @@ const getRecurrentEventDates = async (data) => {
         );
         // console.log(rEventDatesForYear);
 
-        // rEventDates = {
-        //   rEventDates: await getREventData(
-        //     rEventDatesForYear,
-        //     timeInputs,
-        //     endDate
-        //   ),
-        // };
-
         // console.log(rEventDates);
         return await getREventData(rEventDatesForYear, timeInputs, endDate);
       }
@@ -533,6 +507,72 @@ const getRecurrentEventDates = async (data) => {
   // return rEventDates;
 };
 
+//get next event date and time******************************************************************************
+
+const isGreaterThanEqualToCurrentTime = (eventStartTime) => {
+  let eventStartHour = new Date(eventStartTime).getUTCHours();
+  let eventStartMinute = new Date(eventStartTime).getMinutes();
+  let eventStartSecond = 0;
+
+  let currentHour = new Date().getHours();
+  let currentMinute = new Date().getMinutes();
+  let currentSecond = 0;
+
+  let eventStartTimeObject = new Date();
+  eventStartTimeObject.setHours(
+    eventStartHour,
+    eventStartMinute,
+    eventStartSecond
+  );
+
+  let currentTimeObject = new Date(eventStartTimeObject);
+  currentTimeObject.setHours(currentHour, currentMinute, currentSecond);
+
+  if (eventStartTimeObject > currentTimeObject) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+const isGreaterThanOrEqualToCurrentDateTime = (eventStartDate) => {
+  let currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+
+  let date2 = new Date(eventStartDate.getTime());
+  date2.setHours(0, 0, 0, 0);
+
+  if (date2.getTime() >= currentDate.getTime()) {
+    // console.log("is greater than or equal to event start date");
+    return true;
+  }
+  return false;
+};
+
+const getNextEventDateAndTime = (result) => {
+  // console.log(JSON.stringify(result.recurring_event.rEventDates, null, 2));
+  const events = result.recurring_event.rEventDates;
+  const dates = events.filter((event) => {
+    // console.log(event.REventTimes);
+    return isGreaterThanOrEqualToCurrentDateTime(event.startDate);
+  });
+
+  const times = dates[0].REventTimes.filter((event) => {
+    // console.log(event.REventTimes);
+    return isGreaterThanEqualToCurrentTime(event.startTime);
+  });
+
+  const nextEventDate = {
+    startDate: dates[0].startDate,
+    endDate: dates[0].endDate,
+    startTime: times[0].startTime,
+    endTime: times[0].endTime,
+  };
+
+  // console.log(nextEventDate);
+  return nextEventDate;
+};
 module.exports = {
   getRecurrentEventDates,
+  getNextEventDateAndTime,
 };
