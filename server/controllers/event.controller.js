@@ -13,7 +13,10 @@ const keys = require("../config/keys");
 const stripe = require("stripe")(keys.SPRIPE_SECRET);
 var creditCardType = require("credit-card-type");
 const { sendEventInvitation } = require("../utils/mail/mailer");
-const { getRecurrentEventDates } = require("../helpers");
+const {
+  getRecurrentEventDates,
+  getNextEventDateAndTime,
+} = require("../helpers");
 const { isGreaterToCurrentDate } = require("../helpers/schedulerJobs");
 const { REvent } = require("../models/REvent");
 const notifier = require("node-notifier");
@@ -112,47 +115,70 @@ module.exports = {
           .populate("recurring_event")
           .then((result) => {
             let next_event_date_and_time = [];
-            if (result.event_status === "EVENT_CREATED") {
-              return res.status(200).json({
-                data: {
-                  _id: result._id,
-                  event_status: result.event_status,
-                  next_event_date_and_time:
-                    result.recurring_event.rEventDates[0],
-                  message: "Event is created but not start yet",
-                },
-                success: true,
-                message: "Success",
-              });
-            } else if (result.event_status === "EVENT_END") {
-              return res.status(200).json({
-                data: {
-                  _id: result._id,
-                  event_status: result.event_status,
-                  message: "Event is finished",
-                },
-                success: true,
-                message: "Success",
-              });
-            } else {
-              let recurring_dates = result.recurring_event.rEventDates;
-              console.log(recurring_dates);
-              next_event_date_and_time = recurring_dates.filter(
-                (element) => isGreaterToCurrentDate(element.startDate) === true
-              );
 
-              console.log(next_event_date_and_time);
+            // ["EVENT_CREATED", "EVENT_RUNNING", "EVENT_PAUSE", "EVENT_END"]
 
-              return res.status(200).json({
-                data: {
-                  _id: result._id,
-                  event_status: result.event_status,
-                  next_event_date_and_time: next_event_date_and_time[0],
-                  message: "Event is running",
-                },
-                success: true,
-                message: "Success",
-              });
+            const nextEventDateTime = getNextEventDateAndTime(result);
+
+            switch (result.event_status) {
+              case "EVENT_CREATED":
+                return res.status(200).json({
+                  data: {
+                    _id: result._id,
+                    event_status: result.event_status,
+                    next_event_date_and_time: nextEventDateTime,
+                    message: "Event is created but not start yet",
+                  },
+                  success: true,
+                  message: "Success",
+                });
+                break;
+              case "EVENT_RUNNING":
+                let recurring_dates = result.recurring_event.rEventDates;
+                console.log(recurring_dates);
+                next_event_date_and_time = recurring_dates.filter(
+                  (element) =>
+                    isGreaterToCurrentDate(element.startDate) === true
+                );
+
+                console.log(next_event_date_and_time);
+
+                return res.status(200).json({
+                  data: {
+                    _id: result._id,
+                    event_status: result.event_status,
+                    next_event_date_and_time: nextEventDateTime,
+                    message: "Event is running",
+                  },
+                  success: true,
+                  message: "Success",
+                });
+                break;
+              case "EVENT_PAUSE":
+                return res.status(200).json({
+                  data: {
+                    _id: result._id,
+                    event_status: result.event_status,
+                    next_event_date_and_time: nextEventDateTime,
+                    message: "Event is paused",
+                  },
+                  success: true,
+                  message: "Success",
+                });
+                break;
+              case "EVENT_END":
+                return res.status(200).json({
+                  data: {
+                    _id: result._id,
+                    event_status: result.event_status,
+                    message: "Event is finished",
+                  },
+                  success: true,
+                  message: "Success",
+                });
+                break;
+              default:
+                break;
             }
           });
       } catch (error) {
@@ -735,8 +761,8 @@ module.exports = {
           });
         }
 
-        getRecurrentEventDates(req.body).then((rEventData) => {
-          // console.log(rEventData);
+        getRecurrentEventDates(req.body, event_id).then((rEventData) => {
+          console.log(rEventData);
 
           const rEventDataWithEventId = {
             rEventDates: rEventData,
