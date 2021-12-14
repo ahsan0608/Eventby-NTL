@@ -562,15 +562,18 @@ const getNextEventDateAndTime = (result) => {
     return isGreaterThanEqualToCurrentTime(event.startTime);
   });
 
-  const nextEventDate = {
-    startDate: dates[0].startDate,
-    endDate: dates[0].endDate,
-    startTime: times[0].startTime,
-    endTime: times[0].endTime,
-  };
+  if (times.length > 0) {
+    const nextEventDate = {
+      startDate: dates[0].startDate,
+      endDate: dates[0].endDate,
+      startTime: times[0].startTime,
+      endTime: times[0].endTime,
+    };
+    return nextEventDate;
+  }
+  return null;
 
   // console.log(nextEventDate);
-  return nextEventDate;
 };
 module.exports = {
   getRecurrentEventDates,
