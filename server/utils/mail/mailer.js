@@ -11,6 +11,7 @@ const nodemailer = require("nodemailer");
 
 var emailVerificationTemplate = require("../../services/mailTemplates/emailVerificationTemplate");
 const eventTemplate = require("../../services/mailTemplates/eventTemplate");
+const passwordResetTemplate = require("../../services/mailTemplates/passwordResetTemplate");
 
 const transporter = nodemailer.createTransport({
   port: 465,
@@ -27,8 +28,27 @@ async function sendMailForUserVerification(email, token) {
     from: "newgenbabylon@gmail.com",
     to: email,
     subject: "Eamil verification from eventby",
-    text: "Kudos from ebenyby!",
+    text: "Kudos from ebentby!",
     html: emailVerificationTemplate(token),
+  };
+  let mailIsSend = false;
+  try {
+    let info = await transporter.sendMail(mailData);
+    mailIsSend = info.accepted[0] ? true : false;
+  } catch (err) {
+    return err;
+  } finally {
+    return { mailIsSend };
+  }
+}
+
+async function sendMailForPasswordReset(email, token) {
+  const mailData = {
+    from: "newgenbabylon@gmail.com",
+    to: email,
+    subject: "Eamil verification from eventby",
+    text: "Kudos from ebentby!",
+    html: passwordResetTemplate(token),
   };
   let mailIsSend = false;
   try {
@@ -64,4 +84,5 @@ async function sendEventInvitation(to, subject, body, eventId) {
 module.exports = {
   sendMailForUserVerification,
   sendEventInvitation,
+  sendMailForPasswordReset,
 };
