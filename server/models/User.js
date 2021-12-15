@@ -104,6 +104,52 @@ function validateUserLogin(user) {
   return schema.validate(user);
 }
 
+function validateUserForgotPassword(user) {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+  });
+
+  return schema.validate(user);
+}
+
+function validateUserResetPassword(pass) {
+  const passwordObj = {
+    newPassword: pass.newPassword,
+    repeatPassword: pass.repeatPassword,
+  };
+  const schema = Joi.object({
+    newPassword: new PasswordComplexity({
+      min: 8,
+      max: 25,
+      lowerCase: 1,
+      upperCase: 1,
+      numeric: 1,
+      symbol: 1,
+      requirementCount: 4,
+    }),
+    repeatPassword: new PasswordComplexity({
+      min: 8,
+      max: 25,
+      lowerCase: 1,
+      upperCase: 1,
+      numeric: 1,
+      symbol: 1,
+      requirementCount: 4,
+    }),
+  });
+
+  return schema.validate(passwordObj);
+}
+
+async function bcryptPassword(password) {
+  const salt = await bcrypt.genSalt(saltRounds);
+  let myhashPass = await bcrypt.hash(password, salt);
+  return myhashPass;
+}
+
 module.exports = mongoose.model("User", UserSchema);
 module.exports.validateRegistration = validateUserRegistration;
 module.exports.validateLogin = validateUserLogin;
+module.exports.validateUserForgotPassword = validateUserForgotPassword;
+module.exports.validateUserResetPassword = validateUserResetPassword;
+module.exports.bcryptPassword = bcryptPassword;

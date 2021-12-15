@@ -23,6 +23,12 @@ router.post("/activeAccount/:token", controllers.user.post.activeAccount);
 
 router.post("/login", controllers.user.post.login);
 
+router.post("/forgot-password", controllers.user.post.forgotPassword);
+
+router.post("/reset-password/:token", controllers.user.post.resetPassword);
+
+router.post("/change-password", auth(), controllers.user.post.changePassword);
+
 router.post("/logout", controllers.user.post.logout);
 
 router.delete("/:id", controllers.user.delete);

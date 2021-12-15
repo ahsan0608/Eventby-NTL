@@ -12,9 +12,14 @@ const jwt = require("jsonwebtoken");
 const models = require("../models");
 const utils = require("../utils");
 const keys = require("../config/keys");
+const bcrypt = require("bcrypt");
 const { sendMailForUserVerification } = require("../utils/mail/mailer");
+const { sendMailForPasswordReset } = require("../utils/mail/mailer");
 const { validateRegistration } = require("../models/User");
 const { validateLogin } = require("../models/User");
+const { validateUserForgotPassword } = require("../models/User");
+const { validateUserResetPassword } = require("../models/User");
+const { bcryptPassword } = require("../models/User");
 
 module.exports = {
   get: {
@@ -179,11 +184,171 @@ module.exports = {
       }
     },
 
+    forgotPassword: (req, res, next) => {
+      const { email } = req.body;
+
+      const { error } = validateUserForgotPassword(req.body);
+
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      }
+
+      models.User.findOne({ email }).exec(async (err, user) => {
+        if (user) {
+          const token = jwt.sign(
+            {
+              email,
+            },
+            keys.JWT_ACTIVE_ACC_SEC,
+            { expiresIn: "20m" }
+          );
+
+          await sendMailForPasswordReset(email, token).then((mailResp) => {
+            if (mailResp) {
+              return res.status(200).json({
+                success: true,
+                message: "Successfully send email for verification!",
+              });
+            } else {
+              return res.status(400).json({
+                success: false,
+                message:
+                  "Error occured while sending mail! Recheck and try again.",
+                error,
+              });
+            }
+          });
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: "Please provide a valid email!",
+            error,
+          });
+        }
+      });
+    },
+
+    resetPassword: (req, res, next) => {
+      const { newPassword, repeatPassword } = req.body;
+      const token = req.params.token;
+      if (token) {
+        jwt.verify(
+          token,
+          keys.JWT_ACTIVE_ACC_SEC,
+          async function (err, decodedToken) {
+            if (err) {
+              res.status(400).json({
+                success: false,
+                message: "Incorrect link!",
+              });
+            }
+
+            const { error } = validateUserResetPassword(req.body);
+            if (error) {
+              return res.status(400).json({
+                success: false,
+                message: error.details[0].message,
+              });
+            }
+
+            if (newPassword != repeatPassword) {
+              return res.status(400).json({
+                success: false,
+                message: "Passwords didn't match!",
+              });
+            }
+
+            const { email } = decodedToken;
+
+            const hashPass = await bcryptPassword(newPassword);
+
+            models.User.updateOne(
+              { email },
+              {
+                $set: {
+                  password: hashPass,
+                },
+              },
+              { new: true }
+            )
+              .then(async (updatedUser) => {
+                const token = utils.jwt.createToken({ id: updatedUser._id });
+                res.cookie(process.env.COOKIE, token).status(200).json({
+                  success: true,
+                  message:
+                    "Password reset successful! Please login to continue.",
+                });
+              })
+              .catch(next);
+          }
+        );
+        return;
+      }
+    },
+
+    changePassword: (req, res, next) => {
+      const { currentPassword, newPassword, repeatPassword } = req.body;
+      const _id = req.user.id;
+
+      models.User.findById(_id)
+        .then((user) =>
+          !!user
+            ? Promise.all([user, user.matchPassword(currentPassword)])
+            : [null, false]
+        )
+        .then(async ([user, match]) => {
+          if (!match) {
+            return res.status(401).json({
+              success: false,
+              message: "Check current password. Password doesn't match!",
+            });
+          }
+
+          const { error } = validateUserResetPassword(req.body);
+          if (error) {
+            return res.status(400).json({
+              success: false,
+              message: error.details[0].message,
+            });
+          }
+
+          if (newPassword != repeatPassword) {
+            return res.status(400).json({
+              success: false,
+              message: "New passwords didn't match!",
+            });
+          }
+
+          const hashPass = await bcryptPassword(newPassword);
+
+          models.User.updateOne(
+            { _id },
+            {
+              $set: {
+                password: hashPass,
+              },
+            },
+            { new: true }
+          )
+            .then(async (updatedUser) => {
+              const token = utils.jwt.createToken({ id: updatedUser._id });
+              res.cookie(process.env.COOKIE, token).status(200).json({
+                success: true,
+                message: "Password reset successful! Please login to continue.",
+              });
+            })
+            .catch(next);
+        });
+    },
+
     logout: (req, res, next) => {
       const token = req.cookies[process.env.COOKIE];
       models.TokenBlacklist.create({ token })
         .then(() => {
-          res.clearCookie(process.env.COOKIE).send("Logout successfully!");
+          res.clearCookie(process.env.COOKIE).send("Logged out successfully!");
         })
         .catch(next);
     },
