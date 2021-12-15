@@ -27,7 +27,7 @@ async function sendMailForUserVerification(email, token) {
   const mailData = {
     from: "newgenbabylon@gmail.com",
     to: email,
-    subject: "Eamil verification from eventby",
+    subject: "Email verification from eventby",
     text: "Kudos from ebentby!",
     html: emailVerificationTemplate(token),
   };
@@ -46,7 +46,7 @@ async function sendMailForPasswordReset(email, token) {
   const mailData = {
     from: "newgenbabylon@gmail.com",
     to: email,
-    subject: "Eamil verification from eventby",
+    subject: "Reset eventby password",
     text: "Kudos from ebentby!",
     html: passwordResetTemplate(token),
   };

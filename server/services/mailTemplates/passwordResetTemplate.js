@@ -14,10 +14,10 @@ module.exports = (token) => {
     <html>
       <body>
         <div style="text-align: center;">
-          <h3>EventBy email verification to reset password</h3>
+          <h3>Forgot your password? Let's get you a new one.</h3>
           <p>Please click on the given link to reset your password.</p>
           <div>
-            <a href="${keys.redirectDomain}/user/reset-password/${token}">Link Here to verify!</a>
+            <a href="${keys.redirectDomain}/user/reset-password/${token}">Link Here to reset password!</a>
           </div>
         </div>
       </body>
