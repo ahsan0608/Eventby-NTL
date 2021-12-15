@@ -28,7 +28,7 @@ async function sendMailForUserVerification(email, token) {
     from: "newgenbabylon@gmail.com",
     to: email,
     subject: "Email verification from eventby",
-    text: "Kudos from ebentby!",
+    text: "Kudos from eventby!",
     html: emailVerificationTemplate(token),
   };
   let mailIsSend = false;
@@ -47,7 +47,7 @@ async function sendMailForPasswordReset(email, token) {
     from: "newgenbabylon@gmail.com",
     to: email,
     subject: "Reset eventby password",
-    text: "Kudos from ebentby!",
+    text: "Kudos from eventby!",
     html: passwordResetTemplate(token),
   };
   let mailIsSend = false;
