@@ -338,7 +338,7 @@ module.exports = {
                   res.status(200).json({
                     success: true,
                     message: "Successfully saved!",
-                    userObj,
+                    eventObj,
                   });
                 });
               });
