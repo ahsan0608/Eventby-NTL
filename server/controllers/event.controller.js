@@ -21,6 +21,7 @@ const { isGreaterToCurrentDate } = require("../helpers/schedulerJobs");
 const { REvent } = require("../models/REvent");
 const notifier = require("node-notifier");
 const { validateDate } = require("../models/Event");
+const { validateEmailList } = require("../models/Event");
 const { validateEvent } = require("../models/Event");
 const { validateSpeaker } = require("../models/Speaker");
 const { validateSponsor } = require("../models/Sponsor");
@@ -43,7 +44,7 @@ module.exports = {
           .catch(next);
       }
     },
-    details: (req, res, next) => {
+    details: async (req, res, next) => {
       const id = req.params.id;
 
       models.Event.findById(id)
@@ -66,7 +67,20 @@ module.exports = {
           path: "sponsors",
           model: "Sponsor",
         })
-        .exec((err, data) => res.send(data));
+        .then((eventObj) => {
+          return res.status(200).json({
+            success: true,
+            message: "Success",
+            data: eventObj,
+          });
+        })
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Invalid data! Event not found!",
+            error,
+          });
+        });
     },
     mailResponse: (req, res, next) => {
       res.send("Thanks for voting!");
@@ -209,8 +223,15 @@ module.exports = {
           });
           res.status(200).json({
             success: true,
-            message: "Event participant list",
-            participants,
+            message: "Success",
+            data: participants,
+          });
+        })
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Invalid data! Event not found!",
+            error,
           });
         });
     },
@@ -235,8 +256,15 @@ module.exports = {
           });
           res.status(200).json({
             success: true,
-            message: "My invitations list",
-            invitations,
+            message: "Success",
+            data: invitations,
+          });
+        })
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Something went wrong!",
+            error,
           });
         });
     },
@@ -324,7 +352,7 @@ module.exports = {
                   res.status(200).json({
                     success: true,
                     message: "Successfully saved!",
-                    eventObj,
+                    data: eventObj,
                   });
                 });
               });
@@ -364,14 +392,20 @@ module.exports = {
                   res.status(200).json({
                     success: true,
                     message: "Successfully saved!",
-                    eventObj,
+                    data: eventObj,
                   });
                 });
               });
             });
           }
         })
-        .catch(next);
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Something went wrong!",
+            error,
+          });
+        });
     },
     ticket: async (req, res, next) => {
       const event_id = req.params.id;
@@ -384,16 +418,24 @@ module.exports = {
         sale_end_time,
       } = req.body;
 
-      const eventObj = await models.Event.findOne({
+      await models.Event.findOne({
         _id: event_id,
-      });
-
-      if (eventObj.ticket != null) {
-        return res.status(400).json({
-          success: false,
-          message: "You have already save ticket for this event!",
+      })
+        .then((eventObj) => {
+          if (eventObj.ticket != null) {
+            return res.status(400).json({
+              success: false,
+              message: "You have already save ticket for this event!",
+            });
+          }
+        })
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Invalid data! Event not found!",
+            error,
+          });
         });
-      }
 
       const { _id } = req.user;
 
@@ -419,11 +461,17 @@ module.exports = {
               res.status(200).json({
                 success: true,
                 message: "Successfully saved ticket!",
-                updatedEvent,
+                data: updatedEvent,
               });
             });
           })
-          .catch(next);
+          .catch((error) => {
+            res.status(422).json({
+              success: false,
+              message: "Something went wrong! Please try again.",
+              error,
+            });
+          });
       } else if (ticket_type == "paid") {
         models.Ticket.create({
           ticket_type,
@@ -463,16 +511,22 @@ module.exports = {
               res.status(200).json({
                 success: true,
                 message: "Successfully updated event!",
-                updatedEventTicket,
+                data: updatedEventTicket,
               });
             });
           })
-          .catch(next);
+          .catch((error) => {
+            res.status(422).json({
+              success: false,
+              message: "Something went wrong! Please try again.",
+              error,
+            });
+          });
       } else {
         res.status(200).json({
           success: true,
-          message: "You have to specify ticket type free of paid!",
-          updatedEvent,
+          message: "You have to specify ticket type free or paid!",
+          data: updatedEvent,
         });
       }
     },
@@ -582,7 +636,7 @@ module.exports = {
         } else {
           return res
             .status(400)
-            .send({ Error: "Please try again later for One Time Payment" });
+            .send({ Error: "Something went wrong! Please try again later." });
         }
       } catch (error) {
         return res.status(400).json({
@@ -614,16 +668,31 @@ module.exports = {
                   res.status(200).json({
                     success: true,
                     message: "Invitation has sent successfully!",
-                    eventInviteeObj,
+                    data: eventInviteeObj,
                   });
                 });
               })
-              .catch(next),
+              .catch((error) => {
+                res.status(422).json({
+                  success: false,
+                  message: "Something went wrong! Please try again.",
+                  error,
+                });
+              }),
           ]);
         });
       } else {
         const { to, subject, body } = req.body;
         const eventId = req.params.id;
+
+        console.log();
+        if (!validateEmailList(to)) {
+          return res.status(422).json({
+            success: false,
+            message:
+              "Unable to send email! Please recheck invitee's email address!",
+          });
+        }
 
         await sendEventInvitation(to, subject, body, eventId).then(
           async (mailResp) => {
@@ -645,12 +714,17 @@ module.exports = {
                       res.status(200).json({
                         success: true,
                         message: "Invitation has sent successfully!",
-                        eventMailObj,
+                        data: eventMailObj,
                       });
                     });
                   })
-
-                  .catch(next);
+                  .catch((error) => {
+                    res.status(422).json({
+                      success: false,
+                      message: "Something went wrong! Please try again.",
+                      error,
+                    });
+                  });
               } else {
                 await models.Mail.create({
                   subject,
@@ -668,12 +742,17 @@ module.exports = {
                       res.status(200).json({
                         success: true,
                         message: "Invitation has sent successfully!",
-                        eventMailObj,
+                        data: eventMailObj,
                       });
                     });
                   })
-
-                  .catch(next);
+                  .catch((error) => {
+                    res.status(422).json({
+                      success: false,
+                      message: "Something went wrong! Please try again.",
+                      error,
+                    });
+                  });
               }
             } else {
               return res.status(400).json({
@@ -691,16 +770,24 @@ module.exports = {
     joinEvent: async (req, res, next) => {
       const eventId = req.params.id;
 
-      const eventObj = await models.Event.findOne({
+      await models.Event.findOne({
         _id: eventId,
-      });
-
-      if (eventObj.participant.includes(req.user.id)) {
-        return res.status(400).json({
-          success: false,
-          message: "You have already joined this event!",
+      })
+        .then((eventObj) => {
+          if (eventObj.participant.includes(req.user.id)) {
+            return res.status(400).json({
+              success: false,
+              message: "You have already joined this event!",
+            });
+          }
+        })
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Invalid data! Event not found!",
+            error,
+          });
         });
-      }
 
       await models.Event.findOne({
         _id: eventId,
@@ -732,16 +819,17 @@ module.exports = {
                 return res.status(200).json({
                   success: true,
                   message: "Congrats! Youn have joined the event!",
-                  userObj,
+                  data: userObj,
                 });
               });
             }),
           ]);
         })
-        .catch((err) => {
+        .catch((error) => {
           res.status(422).json({
             success: false,
             message: "Something went wrong! please try again!",
+            error,
           });
         });
     },
@@ -832,11 +920,17 @@ module.exports = {
                   res.status(200).json({
                     success: true,
                     message: "Successfully saved speaker!",
-                    updatedEvent,
+                    data: updatedEvent,
                   });
                 });
               })
-              .catch(next);
+              .catch((error) => {
+                res.status(422).json({
+                  success: false,
+                  message: "Something went wrong! Please try again.",
+                  error,
+                });
+              });
           } else {
             models.Event.updateOne(
               { _id: eventId },
@@ -850,12 +944,18 @@ module.exports = {
               res.status(200).json({
                 success: true,
                 message: "Successfully saved speaker!",
-                updatedEvent,
+                data: updatedEvent,
               });
             });
           }
         })
-        .catch(next);
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Something went wrong! Please try again.",
+            error,
+          });
+        });
     },
     addSponsor: async (req, res, next) => {
       const eventId = req.params.id;
@@ -889,12 +989,18 @@ module.exports = {
                 ).then((updatedEvent) => {
                   res.status(200).json({
                     success: true,
-                    message: "Successfully saved speaker!",
-                    updatedEvent,
+                    message: "Successfully saved sponsor!",
+                    data: updatedEvent,
                   });
                 });
               })
-              .catch(next);
+              .catch((error) => {
+                res.status(422).json({
+                  success: false,
+                  message: "Something went wrong! Please try again.",
+                  error,
+                });
+              });
           } else {
             models.Event.updateOne(
               { _id: eventId },
@@ -907,8 +1013,8 @@ module.exports = {
             ).then((updatedEvent) => {
               res.status(200).json({
                 success: true,
-                message: "Successfully saved speaker!",
-                updatedEvent,
+                message: "Successfully saved sponsor!",
+                data: updatedEvent,
               });
             });
           }
@@ -974,11 +1080,17 @@ module.exports = {
             res.status(200).json({
               success: true,
               message: "Successfully updates!",
-              updatedEvent,
+              data: updatedEvent,
             });
           });
         })
-        .catch(next);
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Something went wrong! Please try again.",
+            error,
+          });
+        });
     },
     like: (req, res, next) => {
       const id = req.params.id;
@@ -1024,32 +1136,29 @@ module.exports = {
       const eventId = req.params.id;
       const { coOrganizerId } = req.body;
 
-      const eventObj = await models.Event.findOne({
-        _id: eventId,
-      });
-
-      if (eventObj.admin.includes(coOrganizerId)) {
-        return res.status(400).json({
-          success: false,
-          message: "User has already assigned as co-organizer!",
-        });
-      }
-
-      await models.User.findById(coOrganizerId).then((coOrganizerObj) => {
-        models.Event.updateOne(
-          { _id: eventId },
-          { $push: { admin: coOrganizerObj } },
-          { new: true }
-        )
-          .then((updatedEventCoOrg) =>
-            res.status(200).json({
-              success: true,
-              message: "Co organizer added successfully!",
-              updatedEventCoOrg,
-            })
+      await models.User.findById(coOrganizerId)
+        .then((coOrganizerObj) => {
+          models.Event.updateOne(
+            { _id: eventId },
+            { $push: { admin: coOrganizerObj } },
+            { new: true }
           )
-          .catch(next);
-      });
+            .then((updatedEventCoOrg) =>
+              res.status(200).json({
+                success: true,
+                message: "Co organizer added successfully!",
+                updatedEventCoOrg,
+              })
+            )
+            .catch(next);
+        })
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Invalid Co-organizer! Please try again!",
+            error,
+          });
+        });
     },
     updateREventByIdOrganizer: async (req, res, next) => {
       try {
@@ -1095,10 +1204,16 @@ module.exports = {
           res.status(200).json({
             success: true,
             message: "Successfully deleted!",
-            deletedEvent,
+            data: deletedEvent,
           })
         )
-        .catch(next);
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Something went wrong! Please try again.",
+            error,
+          });
+        });
     },
     deleteSponsor: (req, res, next) => {
       const eventId = req.params.id;
@@ -1114,11 +1229,17 @@ module.exports = {
             res.status(200).json({
               success: true,
               message: "Successfully deleted!",
-              deletedSponsor,
+              data: deletedSponsor,
             })
           );
         })
-        .catch(next);
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Something went wrong! Please try again.",
+            error,
+          });
+        });
     },
   },
 

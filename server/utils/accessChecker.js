@@ -28,8 +28,12 @@ module.exports = () => {
           }
           next();
         })
-        .catch(function (err) {
-          res.status(405).send(err);
+        .catch(function (error) {
+          res.status(405).json({
+            success: false,
+            message: "Invalid data! Event not found!",
+            error,
+          });
         });
     } catch (error) {
       next(error);
