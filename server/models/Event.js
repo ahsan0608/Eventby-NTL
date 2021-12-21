@@ -139,6 +139,22 @@ function validateEventDate(start_date, end_date) {
   return dateValidationBool;
 }
 
+function validateEmailList(raw) {
+  var emails = raw.split(",");
+
+  var valid = true;
+  var regex =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  for (var i = 0; i < emails.length; i++) {
+    if (emails[i] === "" || !regex.test(emails[i].replace(/\s/g, ""))) {
+      valid = false;
+    }
+  }
+  return valid;
+}
+
 module.exports = mongoose.model("Event", EventSchema);
 module.exports.validateEvent = validateEvent;
 module.exports.validateDate = validateEventDate;
+module.exports.validateEmailList = validateEmailList;

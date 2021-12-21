@@ -210,7 +210,7 @@ module.exports = {
             if (mailResp) {
               return res.status(200).json({
                 success: true,
-                message: "Successfully send email for verification!",
+                message: "Successfully send email to reset passward.",
               });
             } else {
               return res.status(400).json({
