@@ -25,7 +25,23 @@ module.exports = {
   get: {
     all: (req, res, next) => {
       models.User.find()
-        .then((users) => res.send(users))
+        .then((users) => {
+          var filtered_users = [];
+          users.map((user) => {
+            let result = {
+              id: user._id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+            };
+            filtered_users.push(result);
+          });
+          res.status(200).json({
+            success: true,
+            message: "Success",
+            data: filtered_users,
+          });
+        })
         .catch(next);
     },
     one: (req, res, next) => {
