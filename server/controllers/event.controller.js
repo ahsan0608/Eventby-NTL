@@ -636,7 +636,7 @@ module.exports = {
         } else {
           return res
             .status(400)
-            .send({ Error: "Something went wrong! Please try again later." });
+            .json({ Error: "Something went wrong! Please try again later." });
         }
       } catch (error) {
         return res.status(400).json({
@@ -653,6 +653,12 @@ module.exports = {
         const { inviteeId } = req.body;
 
         const invitees = inviteeId.split(",");
+        if (invitees.includes(req.user.id)) {
+          res.status(422).json({
+            success: false,
+            message: "You can't send yourself an invitation!",
+          });
+        }
 
         await invitees.map((invitee) => {
           return Promise.all([
