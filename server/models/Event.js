@@ -132,7 +132,7 @@ function validateEventDate(start_date, end_date) {
     var eventStartDate = new Date(start_date);
     var eventEndDate = new Date(end_date);
 
-    if (today < eventStartDate && today < eventEndDate) {
+    if (today <= eventStartDate && today <= eventEndDate) {
       dateValidationBool = true;
     }
   }

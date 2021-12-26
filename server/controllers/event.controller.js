@@ -418,6 +418,14 @@ module.exports = {
         sale_end_time,
       } = req.body;
 
+      const dateValidation = validateDate(sale_start_date, sale_end_date);
+      if (!dateValidation) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid date. Please check the dates!",
+        });
+      }
+
       await models.Event.findOne({
         _id: event_id,
       })
@@ -834,7 +842,7 @@ module.exports = {
         .catch((error) => {
           res.status(422).json({
             success: false,
-            message: "Something went wrong! please try again!",
+            message: "Something went wrong! please try with valid data!",
             error,
           });
         });
@@ -1141,6 +1149,25 @@ module.exports = {
     addCoOrganizer: async (req, res, next) => {
       const eventId = req.params.id;
       const { coOrganizerId } = req.body;
+
+      const eventObj = await models.Event.findOne({
+        _id: eventId,
+      });
+
+      if (eventObj != null) {
+        if (eventObj.admin.includes(coOrganizerId)) {
+          res.status(422).json({
+            success: false,
+            message:
+              "You have already assigned this user as co-organizer for this event!!",
+          });
+        }
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Error while finding event!",
+        });
+      }
 
       await models.User.findById(coOrganizerId)
         .then((coOrganizerObj) => {

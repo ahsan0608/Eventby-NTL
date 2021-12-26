@@ -43,7 +43,7 @@ module.exports = () => {
         .catch(function (err) {
           res.status(405).json({
             success: false,
-            message: "Something went wrong! please recheck!",
+            message: "Something went wrong! Please try again with valid data!",
           });
         });
     } catch (error) {
