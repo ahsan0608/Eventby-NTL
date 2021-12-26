@@ -906,6 +906,32 @@ module.exports = {
 
       const { error } = validateSpeaker(req.body);
 
+      const speakerObj = await models.Speaker.findOne({
+        email: email,
+      });
+
+      if (speakerObj != null) {
+        await models.Event.findOne({
+          _id: eventId,
+        })
+          .then((eventObj) => {
+            if (eventObj.speakers.includes(speakerObj._id)) {
+              res.status(422).json({
+                success: false,
+                message:
+                  "You have already assigned user with this email as a speaker for this event!!",
+              });
+            }
+          })
+          .catch((error) => {
+            res.status(422).json({
+              success: false,
+              message: "Something went wrong! Please try again.",
+              error,
+            });
+          });
+      }
+
       if (error) {
         return res.status(400).json({
           success: false,
