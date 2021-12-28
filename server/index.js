@@ -17,6 +17,8 @@ const { startScheduler } = require("./helpers/startScheduler");
 const app = require("express")();
 app.use(passport.initialize());
 
+global.__basedir = __dirname;
+
 const DB_URL =
   "mongodb+srv://ahsan:12345@eventbydemo.9r3tq.mongodb.net/eventbydemo?retryWrites=true&w=majority";
 // "mongodb+srv://user:eventdb123456@eventdb.wjtee.mongodb.net/eventByTest?retryWrites=true&w=majority";

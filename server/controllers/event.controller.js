@@ -11,6 +11,8 @@ const mongoose = require("mongoose");
 const models = require("../models");
 const keys = require("../config/keys");
 const stripe = require("stripe")(keys.SPRIPE_SECRET);
+const path = require("path");
+const fs = require("fs");
 var creditCardType = require("credit-card-type");
 const { sendEventInvitation } = require("../utils/mail/mailer");
 const {
@@ -25,6 +27,7 @@ const { validateEmailList } = require("../models/Event");
 const { validateEvent } = require("../models/Event");
 const { validateSpeaker } = require("../models/Speaker");
 const { validateSponsor } = require("../models/Sponsor");
+const { uploadSingleFile, uploadMultipleFiles } = require("../utils/upload");
 
 module.exports = {
   get: {
@@ -406,6 +409,99 @@ module.exports = {
             error,
           });
         });
+    },
+    bannerUpload: async (req, res, next) => {
+      const event_id = req.params.id;
+      try {
+        await uploadSingleFile(req, res);
+
+        if (req.file == undefined) {
+          return res.status(400).send({ message: "Please upload a file!" });
+        }
+
+        const obj = {
+          img: {
+            data: fs.readFileSync(
+              path.join(__basedir + "/uploads/" + req.file.filename)
+            ),
+            contentType: "image/png",
+          },
+        };
+
+        models.Event.updateOne(
+          { _id: event_id },
+          {
+            $set: {
+              event_banner: obj.img,
+            },
+          },
+          { new: true }
+        )
+          .then((eventObj) => {
+            return res.status(200).json({
+              success: true,
+              message: "Banner uploaded successful!",
+              eventObj,
+            });
+          })
+          .catch((error) => {
+            res.status(422).json({
+              success: false,
+              message: "Invalid data! Event not found!",
+              error,
+            });
+          });
+      } catch (err) {
+        if (err.code == "LIMIT_FILE_SIZE") {
+          return res.status(500).send({
+            message: "File size cannot be larger than 2MB!",
+          });
+        }
+        res.status(500).send({
+          message: `Could not upload the file: ${req.file.originalname}. ${err}`,
+        });
+      }
+    },
+    multipleImageUpload: async (req, res, next) => {
+      try {
+        await uploadMultipleFiles(req, res);
+
+        Promise.all([
+          req.files.map(async (file) => {
+            const obj = {
+              img: {
+                data: fs.readFileSync(
+                  path.join(__basedir + "/uploads/" + file.filename)
+                ),
+                contentType: "image/png",
+              },
+            };
+            models.Image.create({
+              image: obj.img,
+            }).then((imageObj) => {
+              // console.log("Image saved successfull! " + imageObj);
+            });
+          }),
+        ])
+          .then(res.status(200).json("files successfully uploaded"))
+          .catch((e) => {
+            res.status(500).json({
+              message: "Something went wrong in /uploads/img",
+              error: e,
+            });
+          });
+
+        if (req.files.length <= 0) {
+          return res.send(`You must select at least 1 file.`);
+        }
+      } catch (error) {
+        console.log(error);
+
+        if (error.code === "LIMIT_UNEXPECTED_FILE") {
+          return res.send("Too many files to upload.");
+        }
+        return res.send(`Error when trying upload many files: ${error}`);
+      }
     },
     ticket: async (req, res, next) => {
       const event_id = req.params.id;

@@ -53,6 +53,13 @@ router.put(
 );
 
 router.post(
+  "/uploadEventBanner/:id",
+  auth(),
+  privilege(),
+  controllers.event.post.bannerUpload
+);
+
+router.post(
   "/addSpeaker/:id",
   auth(),
   privilege(),

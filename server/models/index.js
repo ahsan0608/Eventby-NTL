@@ -19,6 +19,7 @@ const REvent = require("./REvent");
 const EventTypeDetails = require("./EventTypeDetails");
 const Speaker = require("./Speaker");
 const Sponsor = require("./Sponsor");
+const Image = require("./Image");
 
 module.exports = {
   User,
@@ -33,4 +34,5 @@ module.exports = {
   EventTypeDetails,
   Speaker,
   Sponsor,
+  Image,
 };
