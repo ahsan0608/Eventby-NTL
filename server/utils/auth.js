@@ -42,7 +42,10 @@ module.exports = (redirectAuthenticated = true) => {
             "jwt must be provided",
           ].includes(err.message)
         ) {
-          res.status(401).send("UNAUTHORIZED!");
+          res.status(401).json({
+            success: false,
+            message: "UNAUTHORIZED!",
+          });
           return;
         }
 

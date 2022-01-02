@@ -364,7 +364,10 @@ module.exports = {
       const token = req.cookies[process.env.COOKIE];
       models.TokenBlacklist.create({ token })
         .then(() => {
-          res.clearCookie(process.env.COOKIE).send("Logged out successfully!");
+          res.clearCookie(process.env.COOKIE).status(200).json({
+            success: true,
+            message: "Logged out successfully!",
+          });
         })
         .catch(next);
     },
