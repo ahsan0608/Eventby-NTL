@@ -37,6 +37,8 @@ router.get(
   controllers.event.get.participantList
 );
 
+router.get("/:id/admin", auth(), controllers.event.get.eventAdmins);
+
 router.get("/my-invitations", auth(), controllers.event.get.myInvitations);
 
 router.put("/like/:id", auth(), controllers.event.put.like);

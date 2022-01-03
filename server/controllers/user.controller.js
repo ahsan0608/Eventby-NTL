@@ -186,8 +186,7 @@ module.exports = {
               firstName: user.firstName,
               lastName: user.lastName,
               email: user.email,
-              createdEvents: user.createdEvents,
-              likedEvents: user.likedEvents,
+              role: user.role,
             };
             const token = utils.jwt.createToken({ id: user._id });
             res.cookie(process.env.COOKIE, token).status(200).json({

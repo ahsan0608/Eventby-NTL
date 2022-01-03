@@ -56,7 +56,13 @@ const EventSchema = new mongoose.Schema(
       default: "EVENT_CREATED",
       enum: ["EVENT_CREATED", "EVENT_RUNNING", "EVENT_PAUSE", "EVENT_END"],
     },
-    admin: [
+    organizer: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    co_organizer: [
       {
         type: mongoose.Types.ObjectId,
         ref: "User",

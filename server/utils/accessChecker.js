@@ -18,13 +18,17 @@ module.exports = () => {
         _id: eventId,
       })
         .then(function (event) {
-          const isAmin = event[0].admin.includes(req.user.id);
-          if (!isAmin) {
-            res.status(403).json({
-              success: false,
-              message: "You don't have privilege to perform this action!",
-            });
-            return;
+          const isOrganizer = event[0].organizer.includes(req.user.id);
+          const isCoOrganizer = event[0].co_organizer.includes(req.user.id);
+          if (!isOrganizer) {
+            if (!isCoOrganizer) {
+              res.status(403).json({
+                success: false,
+                message: "You don't have privilege to perform this action!",
+              });
+              return;
+            }
+            next();
           }
           next();
         })

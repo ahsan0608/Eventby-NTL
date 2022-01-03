@@ -208,7 +208,9 @@ module.exports = {
     participantList: (req, res, next) => {
       const eventId = req.params.id;
 
-      models.Event.findById(eventId)
+      console.log("EventObj: " + eventId);
+
+      models.Event.findById({ _id: eventId })
         .populate({
           path: "participant",
           model: "User",
@@ -216,24 +218,24 @@ module.exports = {
         .then((eventObj) => {
           var participants = [];
           eventObj.participant.map((participant) => {
-            let result = {
+            let result_participants = {
               id: participant._id,
               firstName: participant.firstName,
               lastName: participant.lastName,
               email: participant.email,
             };
-            participants.push(result);
+            participants.push(result_participants);
           });
           res.status(200).json({
             success: true,
             message: "Success",
-            data: participants,
+            data: { participants },
           });
         })
         .catch((error) => {
           res.status(422).json({
             success: false,
-            message: "Invalid data! Event not found!",
+            message: "Something went wrong!",
             error,
           });
         });
@@ -261,6 +263,55 @@ module.exports = {
             success: true,
             message: "Success",
             data: invitations,
+          });
+        })
+        .catch((error) => {
+          res.status(422).json({
+            success: false,
+            message: "Something went wrong!",
+            error,
+          });
+        });
+    },
+    eventAdmins: (req, res, next) => {
+      const eventId = req.params.id;
+
+      console.log("EventObj: " + eventId);
+
+      models.Event.findById({ _id: eventId })
+        .populate({
+          path: "organizer",
+          model: "User",
+        })
+        .populate({
+          path: "co_organizer",
+          model: "User",
+        })
+        .then((eventObj) => {
+          var organizers = [];
+          var co_organizers = [];
+          eventObj.organizer.map((organizer) => {
+            let result_organizer = {
+              id: organizer._id,
+              firstName: organizer.firstName,
+              lastName: organizer.lastName,
+              email: organizer.email,
+            };
+            organizers.push(result_organizer);
+          });
+          eventObj.co_organizer.map((co_organizer) => {
+            let result_coorganizer = {
+              id: co_organizer._id,
+              firstName: co_organizer.firstName,
+              lastName: co_organizer.lastName,
+              co_organizers: co_organizer.email,
+            };
+            co_organizers.push(result_coorganizer);
+          });
+          res.status(200).json({
+            success: true,
+            message: "Success",
+            data: { organizers, co_organizers },
           });
         })
         .catch((error) => {
@@ -345,7 +396,7 @@ module.exports = {
                   start_date,
                   end_date,
                   imageURL,
-                  admin: _id,
+                  organizer: _id,
                 }).then(function (eventObj) {
                   notifier.notify({
                     title: "Success!",
@@ -380,7 +431,7 @@ module.exports = {
                 start_date,
                 end_date,
                 imageURL,
-                admin: _id,
+                organizer: _id,
               }).then(async (eventObj) => {
                 await models.User.updateOne(
                   { _id: req.user.id },
@@ -1277,8 +1328,8 @@ module.exports = {
       });
 
       if (eventObj != null) {
-        if (eventObj.admin.includes(coOrganizerId)) {
-          res.status(422).json({
+        if (eventObj.co_organizer.includes(coOrganizerId)) {
+          return res.status(422).json({
             success: false,
             message:
               "You have already assigned this user as co-organizer for this event!!",
@@ -1295,16 +1346,26 @@ module.exports = {
         .then((coOrganizerObj) => {
           models.Event.updateOne(
             { _id: eventId },
-            { $push: { admin: coOrganizerObj } },
+            { $push: { co_organizer: coOrganizerObj } },
             { new: true }
           )
-            .then((updatedEventCoOrg) =>
-              res.status(200).json({
-                success: true,
-                message: "Co organizer added successfully!",
-                updatedEventCoOrg,
-              })
-            )
+            .then((updatedEventObj) => {
+              models.User.updateOne(
+                { _id: coOrganizerObj._id },
+                {
+                  $set: {
+                    role: "co-organizer",
+                  },
+                },
+                { new: true }
+              ).then((updatedEventCoOrg) => {
+                res.status(200).json({
+                  success: true,
+                  message: "Co organizer added successfully!",
+                  updatedEventCoOrg,
+                });
+              });
+            })
             .catch(next);
         })
         .catch((error) => {
