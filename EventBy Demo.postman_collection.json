@@ -1,0 +1,448 @@
+{
+	"variables": [],
+	"info": {
+		"name": "EventBy Demo",
+		"_postman_id": "cfa2d35c-c7f6-69f3-7c27-f1796d85e810",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "signup",
+			"request": {
+				"url": "http://localhost:4000/user/register",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"firstName\":\"zaman\",\n\t\"lastName\":\"ahsan\",\n\t\"email\":\"ahsan@newgen-bd.com\",\n\t\"password\":\"12345678\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "image upload",
+			"request": {
+				"url": "http://localhost:4000/user/register",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"firstName\":\"user5\",\n\t\"lastName\":\"user5\",\n\t\"username\":\"user5\",\n\t\"password\":\"12345678\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"url": "http://localhost:4000/user/login",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\":\"ahsan@newgen-bd.com\",\n\t\"password\":\"12345678\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event details",
+			"request": {
+				"url": "http://localhost:4000/event/",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic Og==",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\":\"bossbaby\",\n\t\"password\":\"12345678\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event details single",
+			"request": {
+				"url": "http://localhost:4000/event/details/619f5c202fc3053e292e07fb",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic Og==",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\":\"bossbaby\",\n\t\"password\":\"12345678\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event edit",
+			"request": {
+				"url": "http://localhost:4000/event/edit/619f5c202fc3053e292e07fb",
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"new event\",\n\t\"location\":\"Uganda\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event add coOrganizer",
+			"request": {
+				"url": "http://localhost:4000/event/addCoOrganizer/619f5c202fc3053e292e07fb",
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"coOrganizerId\":\"619f5ba52fc3053e292e07f2\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event delete",
+			"request": {
+				"url": "http://localhost:4000/event/delete/6196248973fc118091f690d8",
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"location\":\"In rangpur, Bd\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event create",
+			"request": {
+				"url": "http://localhost:4000/event/create",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t    \"name\": \"newgen event1\",\n        \"description\": \"newgen event1\",\n        \"date\": \"2021-08-14T18:00:00.000Z\",\n        \"location\": \"In barcelona, Spain\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event ticket",
+			"request": {
+				"url": "http://localhost:4000/event/619f5c202fc3053e292e07fb/ticket",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t    \"ticket_type\": \"paid\",\n        \"sale_start_date\": \"22/15/21\",\n        \"sale_start_time\": \"2.0PM\",\n        \"sale_end_date\": \"30/15/21\",\n        \"sale_end_time\": \"5.0PM\",\n        \"custom_ticket\":[\n        \t{\n        \t\t\"name\":\"gold\",\n        \t\t\"price\":\"20\",\n        \t\t\"currency\":\"USD\"\n        \t\t\n        \t},\n        \t        \t{\n        \t\t\"name\":\"silver\",\n        \t\t\"price\":\"15\",\n        \t\t\"currency\":\"USD\"\n        \t\t\n        \t},\n        \t        \t{\n        \t\t\"name\":\"platinum\",\n        \t\t\"price\":\"10\",\n        \t\t\"currency\":\"USD\"\n        \t\t\n        \t}\n        ]\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event invitation",
+			"request": {
+				"url": "http://localhost:4000/event/invite",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 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",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "title",
+							"value": "1st event from eventb",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "subject",
+							"value": "This is the father of all event",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "body",
+							"value": "This is the first event organized by eventby. Please, Join this event.",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "eventId",
+							"value": "619b220707184911270a6a0e",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "recipients",
+							"value": "zaman2ahsan@gmail.com",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event invitation TEST",
+			"request": {
+				"url": "http://localhost:4000/event/invite",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "to",
+							"value": "[\"sourov0608@gmail.com\",\"ahsan@newgen-bd.com\"]",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "subject",
+							"value": "My mail Kuttaaaaaa",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "body",
+							"value": "Respond this email from eventby",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "eventId",
+							"value": "619c8c581de918bd4460402c",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Multiple image upload",
+			"request": {
+				"url": "http://localhost:5000/uploadPhotoMultiple",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "myImage",
+							"description": "",
+							"type": "file",
+							"src": "wallpaperflare.com_wallpaper (2).jpg"
+						},
+						{
+							"key": "description",
+							"value": "My desc",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Multiple image upload TEST",
+			"request": {
+				"url": "http://localhost:4000/event/uploadEventBanner",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "myImage",
+							"description": "",
+							"type": "file",
+							"src": "wallpaperflare.com_wallpaper (3).jpg"
+						},
+						{
+							"key": "description",
+							"value": "My desc",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Single image upload",
+			"request": {
+				"url": "http://localhost:5000/uploadPhoto",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "myImage",
+							"description": "",
+							"type": "file",
+							"src": "wallpaperflare.com_wallpaper (3).jpg"
+						},
+						{
+							"key": "name",
+							"value": "test pic",
+							"description": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "desc",
+							"value": "test pic",
+							"description": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Email Verification",
+			"request": {
+				"url": "http://localhost:4000/user/activeAccount/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdE5hbWUiOiJ6YW1hbiIsImxhc3ROYW1lIjoiYWhzYW4iLCJlbWFpbCI6ImFoc2FuQG5ld2dlbi1iZC5jb20iLCJwYXNzd29yZCI6IjEyMzQ1Njc4IiwiaWF0IjoxNjM3ODMzNjY1LCJleHAiOjE2Mzc4MzQ4NjV9.BqcrP6ll_fdhCiUC50sBksX9CQqtG-BJVQUsxbxDLUw",
+				"method": "POST",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "event invitation TEST",
+			"request": {
+				"url": "http://localhost:4000/event/create",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
